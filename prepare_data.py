@@ -7,9 +7,9 @@ dst_path = "D:/Study/Thesis/LiTS/datasets-png"
 sub_folder = os.listdir(data_path)
 
 for folder in sub_folder:
-    file_names = os.listdir(os.path.join(data_path, folder))
+    file_path = os.path.join(data_path, folder)
+    file_names = os.listdir(file_path)
     for file_name in file_names:
-        file_path = os.path.join(data_path, folder)
         if 'volume' in file_name:
             ct_path = os.path.join(dst_path, folder, 'ct/ct')
             utils.nifti_to_png(nifti_path=file_path, file_name=file_name, png_path=ct_path, ct=True)
