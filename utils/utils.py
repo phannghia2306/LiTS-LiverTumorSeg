@@ -26,7 +26,7 @@ def normalize(volume):
     volume = (volume - vol_min) / (vol_max - vol_min)
     return volume
 
-def nifti_to_png(nifti_path, file_name, png_path, vol_mode = True):
+def nifti_to_png(nifti_path, file_name, png_path, ct=False, liver_seg=False, tumor_seg=False):
     volume_path = os.path.join(nifti_path, file_name)
     load_volume = nib.load(volume_path)
 
@@ -34,19 +34,29 @@ def nifti_to_png(nifti_path, file_name, png_path, vol_mode = True):
     # w, h: slice size; d: number of slices in volume
     (w, h, d) = volume.shape
 
-    if vol_mode: # Save CT images
+    if ct: # Save CT images
         # HU value adjusment
         adj_vol = adjust_HU_value(volume)
         # Normalize volume into range [0, 1]
         norm_vol = normalize(adj_vol)
-
         for i in range(d):
             slice = norm_vol[:,:,i] * 65535
             slice_path = os.path.join(png_path, file_name.replace('.nii', '_' + str(i) + '.png'))
             cv2.imwrite(slice_path, slice.astype(np.uint16)) 
-    else: # Save segmentation images
-        norm_vol = normalize(volume)
+    
+    elif liver_seg: # Save liver segmentations
+        volume[volume >= 1] = 1
         for i in range(d):
-            slice = norm_vol[:,:,i] * 255
+            slice = volume[:,:,i] * 255
             slice_path = os.path.join(png_path, file_name.replace('.nii', '_' + str(i) + '.png'))
-            cv2.imwrite(slice_path, slice) 
+            cv2.imwrite(slice_path, slice)
+    
+    elif tumor_seg: # Save tumor segmentations
+        volume[volume == 1] = 0
+        volume[volume == 2] = 1 
+        for i in range(d):
+            slice = volume[:,:,i] * 255
+            slice_path = os.path.join(png_path, file_name.replace('.nii', '_' + str(i) + '.png'))
+            cv2.imwrite(slice_path, slice)
+    else:
+        print('Correct the parameters!')
