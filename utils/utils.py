@@ -7,6 +7,7 @@ from tensorflow import keras
 import matplotlib.pyplot as plt
 from skimage.measure import label
 
+"""Preprocess"""
 def neuroToRadio(vol, flip_flag):
     """ Change from neurological to radiological orientation. """
     vol = np.transpose(vol, axes=(1, 0, 2))
@@ -157,6 +158,7 @@ def split_to_patients(filenames):
 
     return (sorted_filenames)
 
+"""Crop 3D"""
 def get_CC_largerThanTh(arr, thresh=8000,dbg=False):
     if dbg:
         dbg_CC(arr, prec=0.02)
