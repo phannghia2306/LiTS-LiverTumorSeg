@@ -65,6 +65,21 @@ def nifti_to_png(nifti_path, file_name, png_path, ct=False, liver_seg=False, tum
     else:
         print('Correct the parameters!')
 
+def nifti_to_array(file_path):
+    volume = nib.load(file_path)
+    volume = volume.get_fdata()
+    (w, h, d) = volume.shape
+    array = np.zeros((d, w, h, 3))
+    volume = adjust_HU_value(volume)
+    volume = neuroToRadio(volume, flip_flag=False)
+    volume = normalize(volume)
+    volume = volume * 255
+    volume = volume.astype(np.uint8)
+    for i in range(d):
+        array[i] = cv2.cvtColor(volume[:,:,i], cv2.COLOR_GRAY2BGR)
+        array[i] = normalize(array[i])
+    return array
+
 def split_filenames_train_val(IMG_PATH, val_prec=0.2, suffix='.png', is_sort=True):
     img_dir, _, filenams = next(os.walk(IMG_PATH))
     if suffix:
@@ -289,3 +304,49 @@ def get_crop_coordinates_3D(img_arr, pad_size=1,dbg=False):
         plt.close()
 
     return h_min, h_max, w_min, w_max
+
+# Polar, Cartesian processing
+def centroid(img, lcc=False):
+  if lcc:
+    img = img.astype(np.uint8)
+    nb_components, output, stats, centroids = cv.connectedComponentsWithStats(img, connectivity=4)
+    sizes = stats[:, -1]
+    if len(sizes) > 2:
+      max_label = 1
+      max_size = sizes[1]
+
+      for i in range(2, nb_components):
+          if sizes[i] > max_size:
+              max_label = i
+              max_size = sizes[i]
+
+      img2 = np.zeros(output.shape)
+      img2[output == max_label] = 255
+      img = img2
+
+  if len(img.shape) > 2:
+    M = cv2.moments(img[:,:,1])
+  else:
+    M = cv2.moments(img)
+
+  if M["m00"] == 0:
+    return (img.shape[0] // 2, img.shape[1] // 2)
+  
+  cX = int(M["m10"] / M["m00"])
+  cY = int(M["m01"] / M["m00"])
+  return (cX, cY)
+
+def to_polar(input_img, center):
+  #input_img = input_img.astype(np.float32)
+  value = np.sqrt(((input_img.shape[0]/2.0)**2.0)+((input_img.shape[1]/2.0)**2.0))
+  polar_image = cv2.linearPolar(input_img, center, value, cv2.WARP_FILL_OUTLIERS)
+  polar_image = cv2.rotate(polar_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+  return polar_image
+
+def to_cart(input_img, center):
+  input_img = input_img.astype(np.float32)
+  input_img = cv2.rotate(input_img, cv2.ROTATE_90_CLOCKWISE)
+  value = np.sqrt(((input_img.shape[1]/2.0)**2.0)+((input_img.shape[0]/2.0)**2.0))
+  polar_image = cv2.linearPolar(input_img, center, value, cv2.WARP_FILL_OUTLIERS + cv2.WARP_INVERSE_MAP)
+  polar_image = polar_image.astype(np.uint8)
+  return polar_image
