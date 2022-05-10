@@ -318,7 +318,7 @@ def get_crop_coordinates_3D(img_arr, pad_size=1,dbg=False):
 def centroid(img, lcc=False):
   if lcc:
     img = img.astype(np.uint8)
-    nb_components, output, stats, centroids = cv.connectedComponentsWithStats(img, connectivity=4)
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity=4)
     sizes = stats[:, -1]
     if len(sizes) > 2:
       max_label = 1
@@ -353,9 +353,9 @@ def to_polar(input_img, center):
   return polar_image
 
 def to_cart(input_img, center):
-  input_img = input_img.astype(np.float32)
+  #input_img = input_img.astype(np.float32)
   input_img = cv2.rotate(input_img, cv2.ROTATE_90_CLOCKWISE)
   value = np.sqrt(((input_img.shape[1]/2.0)**2.0)+((input_img.shape[0]/2.0)**2.0))
   polar_image = cv2.linearPolar(input_img, center, value, cv2.WARP_FILL_OUTLIERS + cv2.WARP_INVERSE_MAP)
-  polar_image = polar_image.astype(np.uint8)
+  #polar_image = polar_image.astype(np.uint8)
   return polar_image
