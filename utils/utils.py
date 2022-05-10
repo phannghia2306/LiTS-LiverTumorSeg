@@ -80,6 +80,15 @@ def nifti_to_array(file_path):
         array[i] = normalize(array[i])
     return array
 
+def convert_volume_to_nifti(volume_arr, origin_file_path, filename, output_dir):
+    origin_volume = nib.load(origin_file_path)
+    (w, h, d) = origin_volume.shape
+    seg_vol = np.zeros((w, h, d)).astype('uint8')
+    for i in range(d):
+        seg_vol[:,:,i] = volume_arr[i]
+    new_img = nib.Nifti1Image(seg_vol, origin_volume.affine, origin_volume.header)
+    nib.save(new_img, os.path.join(output_dir, filename))
+
 def split_filenames_train_val(IMG_PATH, val_prec=0.2, suffix='.png', is_sort=True):
     img_dir, _, filenams = next(os.walk(IMG_PATH))
     if suffix:
