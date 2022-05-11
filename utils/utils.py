@@ -85,7 +85,7 @@ def convert_volume_to_nifti(seg_arr, origin_file_path, filename, output_dir):
     (w, h, d) = origin_volume.shape
     seg_vol = np.zeros((w, h, d)).astype('uint8')
     for i in range(d):
-        seg_vol[:,:,i] = seg_arr[i]
+        seg_vol[:,:,i] = np.fliplr(np.transpose(seg_arr[i]))
     new_seg = nib.Nifti1Image(seg_vol, origin_volume.affine, origin_volume.header)
     nib.save(new_seg, os.path.join(output_dir, filename))
 
