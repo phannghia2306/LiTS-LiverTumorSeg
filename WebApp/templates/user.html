@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login Page{% endblock %}
+{% block head %} {% endblock %}
+
+{% block content %}
+
+
+<h2>Up load file</h2>
+<form action="/user" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file_name">
+    <!-- <input type="submit" value="Upload"> -->
+    <button type="submit">Upload</button>
+</form>
+
+<h2>Predict</h2>
+<form action="/predict" method="POST" enctype="multipart/form-data">
+    <button type="submit">Predict</button>
+</form>
+
+<h2>Download results</h2>
+<form action="/download" method="POST" enctype="multipart/form-data">
+    <button type="submit">Download</button>
+</form>
+<!-- <p>
+    <a href="{{url_for('download_file')}}"><button>Download</button></a>
+</p> -->
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+  {% for m in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <span>{{ m }}</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+  {% endfor %} 
+{% endif %} 
+{% endwith %}
+
+{% endblock %}
